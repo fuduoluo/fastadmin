@@ -104,6 +104,9 @@ require.config({
             deps: ['bootstrap', 'slimscroll'],
             exports: '$.AdminLTE'
         },
+        'bootstrap-daterangepicker': [
+            'moment/locale/zh-cn'
+        ],
         'bootstrap-datetimepicker': [
             'moment/locale/zh-cn',
 //            'css!../libs/eonasdan-bootstrap-datetimepicker/build/css/bootstrap-datetimepicker.min.css',
@@ -139,7 +142,7 @@ require(['jquery', 'bootstrap'], function ($, undefined) {
     window.Config = Config;
     // 配置语言包的路径
     var paths = {};
-    paths['lang'] = Config.moduleurl + '/ajax/lang?callback=define&controllername=' + Config.controllername;
+    paths['lang'] = Config.moduleurl + '/ajax/lang?callback=define&controllername=' + Config.controllername + '&lang=' + Config.language + '&v=' + Config.site.version;
     // 避免目录冲突
     paths['backend/'] = 'backend/';
     require.config({paths: paths});

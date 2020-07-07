@@ -39,7 +39,7 @@ class Addon extends Backend
             $v['config'] = $config ? 1 : 0;
             $v['url'] = str_replace($this->request->server('SCRIPT_NAME'), '', $v['url']);
         }
-        $this->assignconfig(['addons' => $addons]);
+        $this->assignconfig(['addons' => $addons, 'api_url' => config('fastadmin.api_url'), 'faversion' => config('fastadmin.version')]);
         return $this->view->fetch();
     }
 
@@ -316,7 +316,10 @@ class Addon extends Backend
         $onlineaddons = Cache::get("onlineaddons");
         if (!is_array($onlineaddons)) {
             $onlineaddons = [];
-            $result = Http::sendRequest(config('fastadmin.api_url') . '/addon/index');
+            $result = Http::sendRequest(config('fastadmin.api_url') . '/addon/index', [], 'GET', [
+                CURLOPT_HTTPHEADER => ['Accept-Encoding:gzip'],
+                CURLOPT_ENCODING   => "gzip"
+            ]);
             if ($result['ret']) {
                 $json = (array)json_decode($result['msg'], true);
                 $rows = isset($json['rows']) ? $json['rows'] : [];

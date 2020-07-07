@@ -4,7 +4,7 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form', 'template'], function
             // 初始化表格参数配置
             Table.api.init({
                 extend: {
-                    index_url: Config.fastadmin.api_url + '/addon/index',
+                    index_url: Config.api_url ? Config.api_url + '/addon/index' : "addon/downloaded",
                     add_url: '',
                     edit_url: '',
                     del_url: '',
@@ -13,6 +13,9 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form', 'template'], function
             });
 
             var table = $("#table");
+
+            // 弹窗自适应宽高
+            var area = Fast.config.openArea != undefined ? Fast.config.openArea : [$(window).width() > 800 ? '800px' : '95%', $(window).height() > 600 ? '600px' : '95%'];
 
             table.on('load-success.bs.table', function (e, json) {
                 if (json && typeof json.category != 'undefined' && $(".nav-category li").size() == 2) {
@@ -67,7 +70,7 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form', 'template'], function
                     $.extend(params, {
                         uid: userinfo ? userinfo.id : '',
                         token: userinfo ? userinfo.token : '',
-                        version: Config.fastadmin.version
+                        version: Config.faversion
                     });
                     return params;
                 },
@@ -183,7 +186,7 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form', 'template'], function
                 $(".btn-switch").removeClass("active");
                 $(this).addClass("active");
                 $("form.form-commonsearch input[name='type']").val($(this).data("type"));
-                table.bootstrapTable('refresh', {url: $(this).data("url"), pageNumber: 1});
+                table.bootstrapTable('refresh', {url: ($(this).data("url") ? $(this).data("url") : $.fn.bootstrapTable.defaults.extend.index_url), pageNumber: 1});
                 return false;
             });
             $(document).on("click", ".nav-category li a", function () {
@@ -202,13 +205,13 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form', 'template'], function
                     Layer.open({
                         content: Template("logintpl", {}),
                         zIndex: 99,
-                        area: ['430px', '350px'],
+                        area: area,
                         title: __('Login FastAdmin'),
                         resize: false,
                         btn: [__('Login'), __('Register')],
                         yes: function (index, layero) {
                             Fast.api.ajax({
-                                url: Config.fastadmin.api_url + '/user/login',
+                                url: Config.api_url + '/user/login',
                                 dataType: 'jsonp',
                                 data: {
                                     account: $("#inputAccount", layero).val(),
@@ -231,7 +234,7 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form', 'template'], function
                     });
                 } else {
                     Fast.api.ajax({
-                        url: Config.fastadmin.api_url + '/user/index',
+                        url: Config.api_url + '/user/index',
                         dataType: 'jsonp',
                         data: {
                             user_id: userinfo.id,
@@ -240,13 +243,13 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form', 'template'], function
                     }, function (data) {
                         Layer.open({
                             content: Template("userinfotpl", userinfo),
-                            area: ['430px', '360px'],
+                            area: area,
                             title: __('Userinfo'),
                             resize: false,
                             btn: [__('Logout'), __('Cancel')],
                             yes: function () {
                                 Fast.api.ajax({
-                                    url: Config.fastadmin.api_url + '/user/logout',
+                                    url: Config.api_url + '/user/logout',
                                     dataType: 'jsonp',
                                     data: {uid: userinfo.id, token: userinfo.token}
                                 }, function (data, ret) {
@@ -282,7 +285,7 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form', 'template'], function
                         uid: uid,
                         token: token,
                         version: version,
-                        faversion: Config.fastadmin.version
+                        faversion: Config.faversion
                     }
                 }, function (data, ret) {
                     Layer.closeAll();
@@ -301,7 +304,7 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form', 'template'], function
                         Layer.open({
                             content: Template("paytpl", ret.data),
                             shade: 0.8,
-                            area: ['800px', '600px'],
+                            area: area,
                             skin: 'layui-layer-msg layui-layer-pay',
                             title: false,
                             closeBtn: true,
@@ -319,7 +322,7 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form', 'template'], function
                             return;
                         }
                         top.Fast.api.open(ret.data.payurl, __('Pay now'), {
-                            area: ["650px", "700px"],
+                            area: area,
                             end: function () {
                                 top.Layer.alert(__('Pay tips'));
                             }
@@ -329,7 +332,7 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form', 'template'], function
                         Layer.open({
                             content: Template("conflicttpl", ret.data),
                             shade: 0.8,
-                            area: ['800px', '600px'],
+                            area: area,
                             title: __('Warning'),
                             btn: [__('Continue install'), __('Cancel')],
                             end: function () {
@@ -362,7 +365,7 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form', 'template'], function
                         Layer.open({
                             content: Template("conflicttpl", ret.data),
                             shade: 0.8,
-                            area: ['800px', '600px'],
+                            area: area,
                             title: __('Warning'),
                             btn: [__('Continue uninstall'), __('Cancel')],
                             end: function () {
@@ -396,7 +399,7 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form', 'template'], function
                         Layer.open({
                             content: Template("conflicttpl", ret.data),
                             shade: 0.8,
-                            area: ['800px', '600px'],
+                            area: area,
                             title: __('Warning'),
                             btn: [__('Continue operate'), __('Cancel')],
                             end: function () {
@@ -420,7 +423,7 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form', 'template'], function
                 var token = userinfo ? userinfo.token : '';
                 Fast.api.ajax({
                     url: 'addon/upgrade',
-                    data: {name: name, uid: uid, token: token, version: version, faversion: Config.fastadmin.version}
+                    data: {name: name, uid: uid, token: token, version: version, faversion: Config.faversion}
                 }, function (data, ret) {
                     Config['addons'][name].version = version;
                     Layer.closeAll();
@@ -560,7 +563,7 @@ define(['jquery', 'bootstrap', 'backend', 'table', 'form', 'template'], function
                     return row.addon && row.addon.version != row.version ? '<a href="' + row.url + '?version=' + row.version + '" target="_blank"><span class="releasetips text-primary" data-toggle="tooltip" title="' + __('New version tips', row.version) + '">' + row.addon.version + '<i></i></span></a>' : row.version;
                 },
                 home: function (value, row, index) {
-                    return row.addon ? '<a href="' + row.addon.url + '" data-toggle="tooltip" title="' + __('View addon index page') + '" target="_blank"><i class="fa fa-home text-primary"></i></a>' : '<a href="javascript:;"><i class="fa fa-home text-gray"></i></a>';
+                    return row.addon && parseInt(row.addon.state) > 0 ? '<a href="' + row.addon.url + '" data-toggle="tooltip" title="' + __('View addon index page') + '" target="_blank"><i class="fa fa-home text-primary"></i></a>' : '<a href="javascript:;"><i class="fa fa-home text-gray"></i></a>';
                 },
             },
             bindevent: function () {
